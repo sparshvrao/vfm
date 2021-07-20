@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{url_for('static',filename='history.css')}}">
+{% endblock %}
+
+{% block main %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+  {% for category, message in messages %}
+            <div class="alert alert-{{category}} alert-dismissible fade show">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{message}}
+            </div>
+            {% endfor %}
+{% endif %}
+{% endwith %}
+    <div class="container">
+      <div class="timeline">
+        <div class="timeline-month">
+          {{status|capitalize}} messages
+        </div>
+
+        {% for month in history_requests %}
+        <div class="timeline-section">
+          <div class="timeline-date">
+            {{month}}
+          </div>
+          <div class="row">
+
+            {% for tran in history_requests[month] %}
+            <div class="col-sm-4 py-1">
+              <a href="{{url_for('.message',status=status,tran_id=tran['id'])}}">
+              <div class="timeline-box">
+                <div class="box-title">
+                  {% if tran['from'] %}
+                  <div><strong>From</strong>:<span> {{tran['from']}}</span></div>
+                  {% else %}
+                  <div><strong>To</strong>:<span> {{tran['to']}}</span></div>
+                  {% endif %}
+                  <div><strong>Description</strong>:<span> {{tran['description'][:25]}}  .....</span></div>
+                </div>
+                <div class="box-footer">
+                  {{ tran['time'].strftime('%dth %b %I:%M %p') }}
+                </div>
+              </div>
+            </a>
+            </div>
+            {% endfor %}
+
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

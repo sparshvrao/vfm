@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{{url_for('static',filename='create_message_copy.css')}}">
+{% endblock %}
+
+{% block main %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{category}} alert-dismissible fade show">
+  <button type="button" class="close" data-dismiss="alert">&times;</button>
+  {{message}}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<div class="message">
+  Create a Message
+</div>
+
+<!-- The file upload form used as target for the file upload widget -->
+<form id="upload" action="" method="POST" enctype="multipart/form-data">
+  <div class="dropdown-box">
+    <label for="to" id="dropdown-label">To</label>
+      <select id="dropdown" name="dept" required>
+        <option disabled selected value>Select option</option>
+        {% for department in dept %}
+        {% if department[1] != session['username'] %}
+        <option value="{{ department[1] }}">{{ department[1] }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    <fieldset class="bg-light p-3">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend"><span class="input-group-text font-weight-bold">File ID</span></div>
+        <input type="text" id="file_id" name="file_id" class="form-control  border border-dark" required>
+      </div>
+      <div id="filediv">
+        <div class="form-group">
+        <textarea class="textarea form-control border border-dark" name="description" id="description" placeholder="Description..." required></textarea>
+        </div>
+        <div class="custom-file mt-2">
+          <input type="file" class="custom-file-input" id="letter" name="letter" required>
+          <label class="custom-file-label border border-dark font-weight-bold" for="customFile">Files to upload</label>
+        </div>
+        <div class="custom-file mt-2">
+          <input type="file" class="custom-file-input" id="digital_sign" name="digital_sign" accept="image/*" required>
+          <label class="custom-file-label border border-dark font-weight-bold" for="customFile">Add Digital signature</label>
+        </div>
+        
+        <div id="previewbutton">
+          <button class="btn btn-info m-3" onclick="getvalues()" id="pre" type="button">Preview</button>
+          <button id="upl" type="submit" for="upload">Upload <i style="padding-left:3px;font-size:15px;" class="fa fa-upload"></i></button>
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+
+  <div id="preview" style="display: none;">
+    <p><strong>Preview</strong></p>
+    <div class="d-flex justify-content-center pt-4 pb-5">
+      <div class="col-lg-8 col-sm-10 col-12 pb-2">
+        <div class="timeline-box">
+          <div class="box-title">
+            <i class="float-right bg-{{status}} fa fa-pencil-alt" aria-hidden="true"> Composed</i>
+            <div class="d-flex"><strong>From</strong>:&nbsp<span id="fromput"> </span ></div>
+            <div class="d-flex"><strong>To</strong>&nbsp &nbsp &nbsp:&nbsp<span id="toput"> </span></div>
+          </div>
+          <div class="box-content">
+            <div class="box-item"><strong>Description</strong>:<br/>
+              <div id="des"></div>
+            </div>
+            <div class="box-item"><strong>File ID:</strong>:<br/>
+              <div id="fid"></div>
+            </div>
+            <div class="row">
+              <div class="box-item col-sm-6 col-12"><strong>Attached file:</strong><br>
+                <div class="btn-group-vertical bg-light col-lg-8">
+                  <a class="btn btn-lg btn-outline-info" href="">View File</a>
+                  <a class="btn btn-sm btn-secondary" href=""><span class="fa fa-download"> </span></a>
+                </div>
+              </div>
+              <div class="box-item col-sm-6 col-12"><strong>Digital signatures file</strong>:<br>
+                <div class="btn-group-vertical bg-light col-lg-8">
+                  <a class="btn btn-lg btn-outline-info" href="">View File</a>
+                  <a class="btn btn-sm btn-secondary" href=""><span class="fa fa-download"> </span></a>
+                </div>
+              </div>
+            </div>
+            
+            
+            </div>
+    
+          </div>
+          <div class="box-footer">
+            <i class="float-left bg-{{status}} fa" aria-hidden="true" data-status="{{status}}"></i>
+            {% if status=='composed' %}
+              <div class="row" style="width: 100%">
+                {% for departs in tran['history'] %}
+                  {% if departs['status']!="pending" %}
+                    <div class="col-sm-4 col-6 status">
+                      <span class="text-{{departs['status']}} fa" aria-hidden="true" data-status="{{departs['status']}}">
+                        {{departs['from']}} <span class="fa fa-arrow-circle-right"></span> {{departs['to']}}</span>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    
+    </div>
+  </div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(".custom-file-input").on("change", function() {
+  var fileName = $(this).val().split("\\").pop();
+  $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+});
+document.getElementById("preview").style.display="none";
+
+
+function getvalues(){
+    var selectto=document.getElementById("dropdown");
+    var fileid=document.getElementById("file_id");
+    var description=document.getElementById("description");
+    selectto=selectto.options[selectto.selectedIndex].value;
+
+    fileid=fileid.value;
+    description=description.value;
+    console.log(selectto,fileid,description);
+
+    document.getElementById("toput").innerHTML=selectto;
+    document.getElementById("fromput").innerHTML="";
+    document.getElementById("des").innerHTML=description;
+    document.getElementById("fid").innerHTML=fileid;
+
+    var preblock=document.getElementById("preview");
+    if(preblock.style.display=="none"){
+      preblock.style.display="block";
+    }else{
+      preblock.style.display="none";
+    }
+  }
+</script>
+{% endblock %}
